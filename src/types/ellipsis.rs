@@ -1,3 +1,5 @@
+use std::any::TypeId;
+
 use crate::{
     ffi,
     ffi_ptr_ext::FfiPtrExt,
@@ -35,7 +37,12 @@ unsafe impl PyTypeInfo for PyEllipsis {
 
     const MODULE: Option<&'static str> = None;
 
+    #[cfg(feature = "extend-opaque")]
     type Layout<T: PyClassImpl> = PyStaticClassObject<T>;
+
+    fn check_layout<T: PyClassImpl>() -> bool {
+        TypeId::of::<T::Layout>() == TypeId::of::<PyStaticClassObject<T>>()
+    }
 
     fn type_object_raw(_py: Python<'_>) -> *mut ffi::PyTypeObject {
         unsafe { ffi::Py_TYPE(ffi::Py_Ellipsis()) }

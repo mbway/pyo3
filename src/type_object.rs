@@ -45,9 +45,13 @@ pub unsafe trait PyTypeInfo: Sized {
 
     /// The type of object layout to use for ancestors or descendants of this type.
     /// should implement `PyClassObjectLayout<T>` in order to actually use it as a layout.
+    #[cfg(feature = "extend-opaque")]
     type Layout<T: PyClassImpl>;
 
-    /// Returns the PyTypeObject instance for this type.
+    /// Returns whether `T::Layout` is compatible with this type.
+    fn check_layout<T: PyClassImpl>() -> bool;
+
+    /// Returns the `PyTypeObject` instance for this type.
     fn type_object_raw(py: Python<'_>) -> *mut ffi::PyTypeObject;
 
     /// Returns the safe abstraction over the type object.

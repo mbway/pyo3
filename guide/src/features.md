@@ -73,6 +73,13 @@ This feature and the APIs it enables is expected to be removed in a future PyO3 
 
 This feature was introduced to ease migration. It was found that delayed reference counts cannot be made sound and hence `Clon`ing an instance of `Py<T>` must panic without the GIL being held. To avoid migrations introducing new panics without warning, the `Clone` implementation itself is now gated behind this feature.
 
+### `extend-opaque`
+
+A mechanism was added in python 3.12 that allows for extension modules to extend types where the internal structure
+of the type is variable sized or unknown. This allows `PyType` to be extended to create
+[metaclasses](class/metaclass.md). This feature requires rustc 1.65+. Without this feature, `#[pyclass]` structs
+extending a variable sized base type will panic during construction.
+
 ### `pyo3_disable_reference_pool`
 
 This is a performance-oriented conditional compilation flag, e.g. [set via `$RUSTFLAGS`][set-configuration-options], which disabled the global reference pool and the assocaited overhead for the crossing the Python-Rust boundary. However, if enabled, `Drop`ping an instance of `Py<T>` without the GIL being held will abort the process.

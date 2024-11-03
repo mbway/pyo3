@@ -15,6 +15,9 @@ Some examples of where metaclasses can be used:
 
 ### Example: A Simple Metaclass
 
+Creating metaclasses is only possible with python 3.12+ and you must have the `pyo3` `extend-opaque` feature enabled
+(which requires rustc 1.65+).
+
 ```rust
 #[pyclass(subclass, extends=PyType)]
 #[derive(Default)]

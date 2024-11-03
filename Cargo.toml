@@ -12,7 +12,7 @@ categories = ["api-bindings", "development-tools::ffi"]
 license = "MIT OR Apache-2.0"
 exclude = ["/.gitignore", ".cargo/config", "/codecov.yml", "/Makefile", "/pyproject.toml", "/noxfile.py", "/.github", "/tests/test_compile_error.rs", "/tests/ui"]
 edition = "2021"
-rust-version = "1.65"
+rust-version = "1.63"
 
 [dependencies]
 cfg-if = "1.0"
@@ -109,6 +109,10 @@ auto-initialize = []
 # Enables `Clone`ing references to Python objects `Py<T>` which panics if the GIL is not held.
 py-clone = []
 
+# Enables extending base classes where the size is unknown (such as `PyType`).
+# Requires rustc 1.65+ and python 3.12+.
+extend-opaque = ["pyo3-macros/extend-opaque"]
+
 # Optimizes PyObject to Vec conversion and so on.
 nightly = []
 
@@ -123,6 +127,7 @@ full = [
     "either",
     "experimental-async",
     "experimental-inspect",
+    "extend-opaque",
     "eyre",
     "hashbrown",
     "indexmap",

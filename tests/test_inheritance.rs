@@ -175,7 +175,7 @@ except Exception as e:
     });
 }
 
-#[cfg(Py_3_12)]
+#[cfg(all(Py_3_12, feature = "extend-opaque"))]
 mod inheriting_type {
     use super::*;
     use pyo3::types::PyType;

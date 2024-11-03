@@ -1807,12 +1807,26 @@ fn impl_pytypeinfo(cls: &syn::Ident, attr: &PyClassArgs, ctx: &Ctx) -> TokenStre
         quote! { ::core::option::Option::None }
     };
 
+    #[cfg(feature = "extend-opaque")]
+    let layout = quote! {
+        type Layout<T: #pyo3_path::impl_::pyclass::PyClassImpl> =
+            <<#cls as #pyo3_path::impl_::pyclass::PyClassImpl>::BaseNativeType as #pyo3_path::type_object::PyTypeInfo>::Layout<T>;
+    };
+
+    #[cfg(not(feature = "extend-opaque"))]
+    let layout = quote! {};
+
     quote! {
         unsafe impl #pyo3_path::type_object::PyTypeInfo for #cls {
             const NAME: &'static str = #cls_name;
             const MODULE: ::std::option::Option<&'static str> = #module;
 
-            type Layout<T: #pyo3_path::impl_::pyclass::PyClassImpl> = <<#cls as #pyo3_path::impl_::pyclass::PyClassImpl>::BaseNativeType as #pyo3_path::type_object::PyTypeInfo>::Layout<T>;
+            #layout
+
+            #[inline]
+            fn check_layout<T: #pyo3_path::impl_::pyclass::PyClassImpl>() -> bool {
+                <#cls as #pyo3_path::impl_::pyclass::PyClassImpl>::BaseNativeType::check_layout::<T>()
+            }
 
             #[inline]
             fn type_object_raw(py: #pyo3_path::Python<'_>) -> *mut #pyo3_path::ffi::PyTypeObject {
@@ -2311,6 +2325,16 @@ impl<'a> PyClassImplsBuilder<'a> {
             }
         });
 
+        #[cfg(feature = "extend-opaque")]
+        let layout = quote! {
+            type Layout = <#cls as #pyo3_path::PyTypeInfo>::Layout<Self>;
+        };
+
+        #[cfg(not(feature = "extend-opaque"))]
+        let layout = quote! {
+            type Layout = #pyo3_path::impl_::pycell::PyStaticClassObject<Self>;
+        };
+
         Ok(quote! {
             #pyclass_base_type_impl
 
@@ -2320,7 +2344,7 @@ impl<'a> PyClassImplsBuilder<'a> {
                 const IS_MAPPING: bool = #is_mapping;
                 const IS_SEQUENCE: bool = #is_sequence;
 
-                type Layout = <#cls as #pyo3_path::PyTypeInfo>::Layout<Self>;
+                #layout
                 type BaseType = #base;
                 type ThreadChecker = #thread_checker;
                 #inventory

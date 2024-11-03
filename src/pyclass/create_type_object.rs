@@ -36,6 +36,7 @@ where
     #[allow(clippy::too_many_arguments)]
     unsafe fn inner(
         py: Python<'_>,
+        layout_is_valid: bool,
         base: *mut ffi::PyTypeObject,
         dealloc: unsafe extern "C" fn(*mut ffi::PyObject),
         dealloc_with_gc: unsafe extern "C" fn(*mut ffi::PyObject),
@@ -50,6 +51,12 @@ where
         module: Option<&'static str>,
         basicsize: ffi::Py_ssize_t,
     ) -> PyResult<PyClassTypeObject> {
+        assert!(
+            layout_is_valid,
+            "Cannot create pyclass {} because the layout of the base type does not match. \
+            You may need to enable the `extend-opaque` feature.",
+            name
+        );
         PyTypeBuilder {
             slots: Vec::new(),
             method_defs: Vec::new(),
@@ -83,6 +90,7 @@ where
     unsafe {
         inner(
             py,
+            T::BaseType::check_layout::<T>(),
             T::BaseType::type_object_raw(py),
             tp_dealloc::<T>,
             tp_dealloc_with_gc::<T>,

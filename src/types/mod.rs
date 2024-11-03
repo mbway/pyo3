@@ -158,7 +158,12 @@ macro_rules! pyobject_native_type_info(
             const NAME: &'static str = stringify!($name);
             const MODULE: ::std::option::Option<&'static str> = $module;
 
-            type Layout<T: $crate::impl_::pyclass::PyClassImpl> = $layout;
+            $crate::pyobject_set_layout!($layout);
+
+            #[inline]
+            fn check_layout<T: $crate::impl_::pyclass::PyClassImpl>() -> bool {
+                ::std::any::TypeId::of::<T::Layout>() == ::std::any::TypeId::of::<$layout>()
+            }
 
             #[inline]
             #[allow(clippy::redundant_closure_call)]
@@ -180,6 +185,22 @@ macro_rules! pyobject_native_type_info(
             pub const _PYO3_DEF: $crate::impl_::pymodule::AddTypeToModule<Self> = $crate::impl_::pymodule::AddTypeToModule::new();
         }
     };
+);
+
+#[doc(hidden)]
+#[macro_export]
+#[cfg(feature = "extend-opaque")]
+macro_rules! pyobject_set_layout(
+    ($layout:path) => {
+        type Layout<T: $crate::impl_::pyclass::PyClassImpl> = $layout;
+    };
+);
+
+#[doc(hidden)]
+#[macro_export]
+#[cfg(not(feature = "extend-opaque"))]
+macro_rules! pyobject_set_layout(
+    ($layout:path) => { };
 );
 
 /// Declares all of the boilerplate for Python types.
